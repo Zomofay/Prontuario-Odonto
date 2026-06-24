@@ -52,6 +52,19 @@ function validateCpf(cpf) {
 const STORE_KEY = 'tw_users';
 const SESSION_KEY = 'tw_session';
 
+/* SEGURANÇA: Hash básico apenas para DEMONSTRAÇÃO
+   Para produção com dados reais: usar bcrypt no backend com HTTPS
+   Este hash é simples e NÃO é criptografia real */
+function hashPassword(pwd) {
+  let h = 0;
+  for (let i = 0; i < pwd.length; i++) {
+    const char = pwd.charCodeAt(i);
+    h = ((h << 5) - h) + char;
+    h = h & h;
+  }
+  return btoa('h_' + Math.abs(h).toString(36) + '_' + pwd.length);
+}
+
 function getUsers() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
   catch { return []; }
@@ -83,7 +96,7 @@ function setSession(user, remember) {
       phone: '(32) 99178-5961',
       gender: 'Feminino',
       email: 'josifranca@email.com',
-      password: 'demo123',
+      password: hashPassword('demo123'),
       createdAt: '2024-01-10',
       prontuario: {
         codigoPaciente: '1264',
@@ -200,8 +213,9 @@ if (loginForm) {
 
     const users = getUsers();
     const user = users.find(u => u.cpf === cpf);
+    const hashedInput = hashPassword(pass);
 
-    if (!user || user.password !== pass) {
+    if (!user || user.password !== hashedInput) {
       setError('loginGlobalErr','CPF ou senha incorretos. Verifique os dados.');
       showToast('Credenciais inválidas', 'error');
       return;
@@ -257,7 +271,7 @@ if (registerForm) {
       name, cpf,
       cpfFormatted: $('regCpf')?.value || '',
       birth, phone, gender, email,
-      password: pass,
+      password: hashPassword(pass),
       createdAt: new Date().toISOString().slice(0,10),
       prontuario: {
         codigoPaciente: String(Math.floor(Math.random()*9000)+1000),
@@ -279,7 +293,6 @@ if (registerForm) {
   });
 }
 
-/* ---- Forgot password ---- */
-$('forgotBtn').addEventListener('click', () => {
-  showToast('Entre em contato pelo WhatsApp para recuperar sua senha.', '');
-});
+/* ---- AVISO DE SEGURANÇA ---- */
+console.warn('%c⚠️  MODO DEMONSTRAÇÃO - SEGURANÇA LIMITADA', 'color: red; font-size: 14px; font-weight: bold;');
+console.warn('Este aplicativo usa localStorage e hash básico. Para dados reais de pacientes em produção, implemente: Backend JWT + Database encriptado + HTTPS + Validação servidor + LGPD/HIPAA compliance');
