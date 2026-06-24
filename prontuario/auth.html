@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Área do Paciente — Dra. Thallyta Welkson</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="auth.css"/>
+</head>
+<body>
+  <div class="auth-split">
+    <!-- Lado esquerdo — visual -->
+    <div class="auth-visual">
+      <div class="auth-visual__bg" aria-hidden="true"></div>
+      <div class="auth-visual__blob auth-visual__blob--1" aria-hidden="true"></div>
+      <div class="auth-visual__blob auth-visual__blob--2" aria-hidden="true"></div>
+      <div class="auth-visual__content">
+        <a href="../index.html" class="auth-logo">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none"><path d="M20 4C13 4 8 8.5 8 15c0 4.5 1.8 7.2 3.2 11.4.9 2.6 1.4 5.6 2.6 7.7.7 1.3 1.8 1.9 2.7.8 1-1.2 1-4 1.4-6.6.3-1.9 1-3.3 2.1-3.3s1.8 1.4 2.1 3.3c.4 2.6.4 5.4 1.4 6.6.9 1.1 2-.5 2.7-1.8 1.2-2.1 1.7-5.1 2.6-7.7C30.2 22.2 32 19.5 32 15c0-6.5-5-11-12-11z" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/></svg>
+          <span>Dra. Thallyta <strong>Welkson</strong></span>
+        </a>
+        <div class="auth-visual__hero">
+          <h1>Seu prontuário digital,<br><span>simples e seguro.</span></h1>
+          <p>Acesse seu histórico de consultas, exames, documentos e evolução do tratamento em qualquer lugar.</p>
+          <div class="auth-features">
+            <div class="auth-feature"><span>🔒</span> Seguro e em conformidade</div>
+            <div class="auth-feature"><span>📄</span> Documentos organizados</div>
+            <div class="auth-feature"><span>🦷</span> Histórico completo</div>
+            <div class="auth-feature"><span>📅</span> Agendamentos</div>
+          </div>
+        </div>
+        <div class="auth-visual__footer">
+          <a href="../index.html">← Voltar ao site</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lado direito — formulários -->
+    <div class="auth-form-side">
+      <div class="auth-card">
+
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab is-active" data-tab="login">Entrar</button>
+          <button class="auth-tab" data-tab="register">Cadastrar</button>
+        </div>
+
+        <!-- LOGIN -->
+        <div class="auth-panel is-active" id="panel-login">
+          <div class="auth-panel__header">
+            <h2>Bem-vindo(a) de volta</h2>
+            <p>Entre com seu CPF e senha para acessar seu prontuário</p>
+          </div>
+          <form id="loginForm" autocomplete="on">
+            <div class="form-group">
+              <label for="loginCpf">CPF</label>
+              <input id="loginCpf" type="text" placeholder="000.000.000-00" maxlength="14" autocomplete="username" required/>
+              <span class="form-error" id="loginCpfErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="loginPass">Senha</label>
+              <div class="input-eye">
+                <input id="loginPass" type="password" placeholder="Sua senha" autocomplete="current-password" required/>
+                <button type="button" class="eye-btn" data-target="loginPass" aria-label="Mostrar senha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <span class="form-error" id="loginPassErr"></span>
+            </div>
+            <div class="form-remember">
+              <label class="checkbox-label">
+                <input type="checkbox" id="rememberMe"/> Lembrar de mim
+              </label>
+              <button type="button" class="link-btn" id="forgotBtn">Esqueci a senha</button>
+            </div>
+            <div class="form-error form-error--block" id="loginGlobalErr"></div>
+            <button type="submit" class="btn-primary" id="loginSubmit">
+              <span>Entrar</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </form>
+          <div class="auth-divider"><span>ou</span></div>
+          <p class="auth-switch">Não tem conta? <button class="link-btn" data-switch="register">Cadastre-se aqui</button></p>
+          <!-- Demo rápido -->
+          <div class="demo-hint">
+            <span>💡</span>
+            <div>
+              <strong>Demonstração</strong>
+              <p>CPF: <code>123.456.789-00</code> / Senha: <code>demo123</code></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CADASTRO -->
+        <div class="auth-panel" id="panel-register">
+          <div class="auth-panel__header">
+            <h2>Criar sua conta</h2>
+            <p>Preencha os dados abaixo para acessar seu prontuário digital</p>
+          </div>
+          <form id="registerForm" autocomplete="on">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="regName">Nome completo</label>
+                <input id="regName" type="text" placeholder="Seu nome completo" autocomplete="name" required/>
+                <span class="form-error" id="regNameErr"></span>
+              </div>
+            </div>
+            <div class="form-row form-row--2">
+              <div class="form-group">
+                <label for="regCpf">CPF</label>
+                <input id="regCpf" type="text" placeholder="000.000.000-00" maxlength="14" required/>
+                <span class="form-error" id="regCpfErr"></span>
+              </div>
+              <div class="form-group">
+                <label for="regBirth">Data de nascimento</label>
+                <input id="regBirth" type="date" required/>
+              </div>
+            </div>
+            <div class="form-row form-row--2">
+              <div class="form-group">
+                <label for="regPhone">Celular / WhatsApp</label>
+                <input id="regPhone" type="tel" placeholder="(00) 00000-0000" maxlength="15" required/>
+              </div>
+              <div class="form-group">
+                <label for="regGender">Gênero</label>
+                <select id="regGender">
+                  <option value="">Selecione</option>
+                  <option>Feminino</option>
+                  <option>Masculino</option>
+                  <option>Prefiro não dizer</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="regEmail">E-mail (opcional)</label>
+              <input id="regEmail" type="email" placeholder="seu@email.com" autocomplete="email"/>
+            </div>
+            <div class="form-row form-row--2">
+              <div class="form-group">
+                <label for="regPass">Senha</label>
+                <div class="input-eye">
+                  <input id="regPass" type="password" placeholder="Mín. 6 caracteres" required/>
+                  <button type="button" class="eye-btn" data-target="regPass" aria-label="Mostrar senha">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <span class="form-error" id="regPassErr"></span>
+              </div>
+              <div class="form-group">
+                <label for="regPassConf">Confirmar senha</label>
+                <div class="input-eye">
+                  <input id="regPassConf" type="password" placeholder="Repita a senha" required/>
+                  <button type="button" class="eye-btn" data-target="regPassConf" aria-label="Mostrar senha">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <span class="form-error" id="regPassConfErr"></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="regTerms" required/>
+                Li e aceito os <button type="button" class="link-btn">Termos de uso</button> e a <button type="button" class="link-btn">Política de privacidade</button>
+              </label>
+              <span class="form-error" id="regTermsErr"></span>
+            </div>
+            <div class="form-error form-error--block" id="regGlobalErr"></div>
+            <button type="submit" class="btn-primary" id="registerSubmit">
+              <span>Criar conta</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </form>
+          <div class="auth-divider"><span>ou</span></div>
+          <p class="auth-switch">Já tem conta? <button class="link-btn" data-switch="login">Entrar aqui</button></p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="auth.js"></script>
+</body>
+</html>
