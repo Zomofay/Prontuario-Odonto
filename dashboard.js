@@ -69,22 +69,34 @@ function getUser(id) { return getUsers().find(u => u.id === id) || null; }
 
 /* ---- Proteção de rota ---- */
 const session = getSession();
-if (!session) { window.location.href = 'auth.html'; throw 0; }
+if (!session) { 
+  console.error('Sessão não encontrada');
+  window.location.href = 'auth.html'; 
+  throw new Error('Sessão não encontrada'); 
+}
 const user = getUser(session.id);
-if (!user)    { window.location.href = 'auth.html'; throw 0; }
-const p = user.prontuario;
+if (!user) { 
+  console.error('Usuário não encontrado');
+  window.location.href = 'auth.html'; 
+  throw new Error('Usuário não encontrado'); 
+}
+const p = user.prontuario || {};
 
 /* ================================================================
    TOPBAR — nome, avatar, saudação
 ================================================================ */
-const firstName = user.name.split(' ')[0];
-const initial   = firstName[0].toUpperCase();
-$('topbarAvatar').textContent = initial;
-$('topbarName').textContent   = firstName;
+const firstName = (user.name || 'Paciente').split(' ')[0];
+const initial   = firstName[0]?.toUpperCase() || 'P';
+const topbarAvatar = $('topbarAvatar');
+const topbarName = $('topbarName');
+const greetingText = $('greetingText');
+
+if (topbarAvatar) topbarAvatar.textContent = initial;
+if (topbarName) topbarName.textContent = firstName;
 
 const hour = new Date().getHours();
 const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
-$('greetingText').textContent = `${greeting}, ${firstName}! 👋`;
+if (greetingText) greetingText.textContent = `${greeting}, ${firstName}! 👋`;
 
 /* ================================================================
    NAVEGAÇÃO
@@ -121,25 +133,37 @@ document.addEventListener('click', e => {
    SIDEBAR MOBILE
 ================================================================ */
 function closeSidebar() {
-  $('sidebar').classList.remove('is-open');
-  $('sidebarOverlay').classList.remove('is-show');
+  const sidebar = $('sidebar');
+  const overlay = $('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('is-open');
+  if (overlay) overlay.classList.remove('is-show');
   document.body.style.overflow = '';
 }
-$('menuBtn').addEventListener('click', () => {
-  const open = $('sidebar').classList.toggle('is-open');
-  $('sidebarOverlay').classList.toggle('is-show', open);
-  document.body.style.overflow = open ? 'hidden' : '';
-});
-$('sidebarOverlay').addEventListener('click', closeSidebar);
+const menuBtn = $('menuBtn');
+if (menuBtn) {
+  menuBtn.addEventListener('click', () => {
+    const sidebar = $('sidebar');
+    const overlay = $('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+    const open = sidebar.classList.toggle('is-open');
+    overlay.classList.toggle('is-show', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+}
+const sidebarOverlay = $('sidebarOverlay');
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
 
 /* ================================================================
    LOGOUT
 ================================================================ */
-$('logoutBtn').addEventListener('click', () => {
-  sessionStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  window.location.href = 'auth.html';
-});
+const logoutBtn = $('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    window.location.href = 'auth.html';
+  });
+}
 
 /* ================================================================
    SEÇÃO: VISÃO GERAL
@@ -150,10 +174,15 @@ RENDERERS.overview = function() {
     .filter(c => c.status === 'agendado')
     .sort((a,b) => parseDate(a.data) - parseDate(b.data));
 
-  $('statsProxConsulta').textContent = proximas.length ? formatDateBR(proximas[0].data) : 'Nenhuma';
-  $('statsEvolucoes').textContent    = (p.evolucoes  || []).length;
-  $('statsDocumentos').textContent   = (p.documentos || []).length;
-  $('statsCodigo').textContent       = p.codigoPaciente || '—';
+  const statsProxConsulta = $('statsProxConsulta');
+  const statsEvolucoes = $('statsEvolucoes');
+  const statsDocumentos = $('statsDocumentos');
+  const statsCodigo = $('statsCodigo');
+  
+  if (statsProxConsulta) statsProxConsulta.textContent = proximas.length ? formatDateBR(proximas[0].data) : 'Nenhuma';
+  if (statsEvolucoes) statsEvolucoes.textContent = (p.evolucoes  || []).length;
+  if (statsDocumentos) statsDocumentos.textContent = (p.documentos || []).length;
+  if (statsCodigo) statsCodigo.textContent = p.codigoPaciente || '—';
 
   /* — banner próxima consulta — */
   const existing = document.querySelector('.next-banner');
@@ -174,23 +203,29 @@ RENDERERS.overview = function() {
         <div class="next-banner__text">${label}</div>
         <a href="https://wa.me/5500000000000" target="_blank" class="next-banner__btn">Confirmar via WhatsApp</a>
       `;
-      $('section-overview').querySelector('.page-header').insertAdjacentElement('afterend', banner);
+      const sectionOverview = $('section-overview');
+      const pageHeader = sectionOverview?.querySelector('.page-header');
+      if (pageHeader) pageHeader.insertAdjacentElement('afterend', banner);
     }
   }
 
   /* — próximas consultas (mini lista) — */
   const ccEl = $('overviewConsultas');
   const upcoming = proximas.slice(0,3);
-  ccEl.innerHTML = upcoming.length
-    ? upcoming.map(c => miniAgendaItem(c)).join('')
-    : emptyState('📅','Nenhuma consulta agendada.<br>Agende pelo WhatsApp!');
+  if (ccEl) {
+    ccEl.innerHTML = upcoming.length
+      ? upcoming.map(c => miniAgendaItem(c)).join('')
+      : emptyState('📅','Nenhuma consulta agendada.<br>Agende pelo WhatsApp!');
+  }
 
   /* — últimas evoluções (mini lista) — */
   const eeEl = $('overviewEvolucoes');
   const evos = [...(p.evolucoes || [])].reverse().slice(0,3);
-  eeEl.innerHTML = evos.length
-    ? evos.map(e => miniEvoItem(e)).join('')
-    : emptyState('📋','Nenhuma evolução registrada ainda.');
+  if (eeEl) {
+    eeEl.innerHTML = evos.length
+      ? evos.map(e => miniEvoItem(e)).join('')
+      : emptyState('📋','Nenhuma evolução registrada ainda.');
+  }
 };
 
 function miniAgendaItem(c) {
@@ -218,7 +253,11 @@ function miniEvoItem(e) {
    SEÇÃO: PRONTUÁRIO
 ================================================================ */
 RENDERERS.prontuario = function() {
-  $('pronDados').innerHTML = [
+  const pronDados = $('pronDados');
+  const pronContato = $('pronContato');
+  const pronOdonto = $('pronOdonto');
+  
+  if (pronDados) pronDados.innerHTML = [
     infoItem('Nome completo', user.name),
     infoItem('Data de nascimento', formatDateBR(user.birth)),
     infoItem('Gênero', user.gender),
@@ -227,14 +266,14 @@ RENDERERS.prontuario = function() {
     infoItem('Profissão', p.profissao),
   ].join('');
 
-  $('pronContato').innerHTML = [
+  if (pronContato) pronContato.innerHTML = [
     infoItem('Celular / WhatsApp', user.phone),
     infoItem('E-mail', user.email),
     infoItem('Pref. de lembrete', p.prefLembrete),
     infoItem('Cadastrado em', formatDateBR(user.createdAt)),
   ].join('');
 
-  $('pronOdonto').innerHTML = [
+  if (pronOdonto) pronOdonto.innerHTML = [
     infoItem('Código do paciente', p.codigoPaciente),
     infoItem('Total de consultas', (p.consultas  || []).length),
     infoItem('Total de evoluções', (p.evolucoes  || []).length),
@@ -250,7 +289,8 @@ RENDERERS.prontuario = function() {
 let agendaFilter = 'agendado';
 
 RENDERERS.agenda = function() {
-  $all('.agenda-tab').forEach(tab => {
+  const agendaTabs = $all('.agenda-tab');
+  agendaTabs.forEach(tab => {
     tab.classList.toggle('is-active', tab.dataset.filter === agendaFilter);
     tab.onclick = () => { agendaFilter = tab.dataset.filter; RENDERERS.agenda(); };
   });
@@ -263,6 +303,8 @@ RENDERERS.agenda = function() {
     });
 
   const list = $('agendaList');
+  if (!list) return;
+  
   if (!consultas.length) {
     list.innerHTML = emptyState('📅',
       agendaFilter === 'agendado'
@@ -299,6 +341,8 @@ RENDERERS.agenda = function() {
 ================================================================ */
 RENDERERS.evolucoes = function() {
   const list = $('evolucoesList');
+  if (!list) return;
+  
   const evos = [...(p.evolucoes || [])].reverse();
   if (!evos.length) {
     list.innerHTML = emptyState('📋','Nenhuma evolução registrada ainda.');
@@ -320,6 +364,8 @@ RENDERERS.evolucoes = function() {
 ================================================================ */
 RENDERERS.documentos = function() {
   const list = $('documentosList');
+  if (!list) return;
+  
   const docs = p.documentos || [];
   if (!docs.length) {
     list.innerHTML = emptyState('📁','Nenhum documento arquivado ainda.<br>Solicite pelo WhatsApp.');
@@ -351,8 +397,11 @@ RENDERERS.documentos = function() {
    SEÇÃO: ANAMNESE
 ================================================================ */
 RENDERERS.anamnese = function() {
+  const content = $('anamneseContent');
+  if (!content) return;
+  
   const a = p.anamnese || {};
-  $('anamneseContent').innerHTML = [
+  content.innerHTML = [
     infoItem('Alergias',             a.alergias),
     infoItem('Medicamentos em uso',  a.medicamentos),
     infoItem('Doenças pré-existentes', a.doencas),
@@ -370,11 +419,16 @@ RENDERERS.anamnese = function() {
    SEÇÃO: PERFIL
 ================================================================ */
 RENDERERS.perfil = function() {
-  $('perfilAvatar').textContent = initial;
-  $('perfilName').textContent   = user.name;
-  $('perfilCpf').textContent    = 'CPF: ' + (user.cpfFormatted || '—');
+  const perfilAvatar = $('perfilAvatar');
+  const perfilName = $('perfilName');
+  const perfilCpf = $('perfilCpf');
+  const perfilInfo = $('perfilInfo');
+  
+  if (perfilAvatar) perfilAvatar.textContent = initial;
+  if (perfilName) perfilName.textContent = user.name;
+  if (perfilCpf) perfilCpf.textContent = 'CPF: ' + (user.cpfFormatted || '—');
 
-  $('perfilInfo').innerHTML = [
+  if (perfilInfo) perfilInfo.innerHTML = [
     infoItem('Nome', user.name),
     infoItem('CPF', user.cpfFormatted),
     infoItem('Nascimento', formatDateBR(user.birth)),
@@ -385,35 +439,52 @@ RENDERERS.perfil = function() {
 };
 
 /* — Alterar senha — */
-$('changePassForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const err = $('passFormErr');
-  err.textContent = '';
+const changePassForm = $('changePassForm');
+if (changePassForm) {
+  changePassForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const err = $('passFormErr');
+    if (!err) return;
+    err.textContent = '';
 
-  const oldPass  = $('oldPass').value;
-  const newPass  = $('newPass').value;
-  const newPassC = $('newPassConf').value;
+    const oldPass  = $('oldPass')?.value || '';
+    const newPass  = $('newPass')?.value || '';
+    const newPassC = $('newPassConf')?.value || '';
 
-  const freshUser = getUser(user.id);
-  if (!oldPass || oldPass !== freshUser.password) {
-    err.textContent = 'Senha atual incorreta.'; return;
-  }
-  if (newPass.length < 6) {
-    err.textContent = 'A nova senha deve ter no mínimo 6 caracteres.'; return;
-  }
-  if (newPass !== newPassC) {
-    err.textContent = 'As senhas não coincidem.'; return;
-  }
+    const freshUser = getUser(user.id);
+    if (!oldPass || !freshUser || oldPass !== freshUser.password) {
+      err.textContent = 'Senha atual incorreta.'; return;
+    }
+    if (newPass.length < 6) {
+      err.textContent = 'A nova senha deve ter no mínimo 6 caracteres.'; return;
+    }
+    if (newPass !== newPassC) {
+      err.textContent = 'As senhas não coincidem.'; return;
+    }
 
-  const users = getUsers();
-  const idx = users.findIndex(u => u.id === user.id);
-  if (idx !== -1) { users[idx].password = newPass; saveUsers(users); user.password = newPass; }
+    const users = getUsers();
+    const idx = users.findIndex(u => u.id === user.id);
+    if (idx !== -1) { users[idx].password = newPass; saveUsers(users); user.password = newPass; }
 
-  $('oldPass').value = $('newPass').value = $('newPassConf').value = '';
-  showToast('Senha alterada com sucesso! 🔒', 'success');
-});
+    const oldPassEl = $('oldPass');
+    const newPassEl = $('newPass');
+    const newPassConfEl = $('newPassConf');
+    if (oldPassEl) oldPassEl.value = '';
+    if (newPassEl) newPassEl.value = '';
+    if (newPassConfEl) newPassConfEl.value = '';
+    
+    showToast('Senha alterada com sucesso! 🔒', 'success');
+  });
+}
 
 /* ================================================================
    INICIALIZAÇÃO
 ================================================================ */
-showSection('overview');
+try {
+  console.log('🚀 Iniciando Dashboard...');
+  showSection('overview');
+  console.log('✅ Dashboard carregado com sucesso!');
+} catch (err) {
+  console.error('❌ Erro ao carregar dashboard:', err);
+  showToast('Erro ao carregar o dashboard. Recarregue a página.', 'error');
+}

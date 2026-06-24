@@ -122,18 +122,28 @@ function setSession(user, remember) {
 })();
 
 /* ---- Verificar sessão ativa ---- */
-if (getSession()) {
-  window.location.href = 'dashboard.html';
+try {
+  if (getSession()) {
+    window.location.href = 'dashboard.html';
+  }
+} catch (err) {
+  console.error('Erro ao verificar sessão:', err);
 }
 
 /* ---- Tabs ---- */
-document.querySelectorAll('.auth-tab').forEach(tab => {
+const authTabs = document.querySelectorAll('.auth-tab');
+authTabs.forEach(tab => {
   tab.addEventListener('click', () => {
     const target = tab.dataset.tab;
+    const panelEl = $('panel-' + target);
+    if (!panelEl) {
+      console.error('Painel não encontrado:', target);
+      return;
+    }
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('is-active'));
     document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('is-active'));
     tab.classList.add('is-active');
-    $('panel-' + target).classList.add('is-active');
+    panelEl.classList.add('is-active');
   });
 });
 document.querySelectorAll('[data-switch]').forEach(btn => {
@@ -148,13 +158,13 @@ document.querySelectorAll('[data-switch]').forEach(btn => {
   });
 });
 
-/* ---- Eye toggle ---- */
-document.querySelectorAll('.eye-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const inp = $(btn.dataset.target);
-    inp.type = inp.type === 'password' ? 'text' : 'password';
+/* ---- Forgot password ---- */
+const forgotBtn = $('forgotBtn');
+if (forgotBtn) {
+  forgotBtn.addEventListener('click', () => {
+    showToast('Entre em contato pelo WhatsApp para recuperar sua senha.', '');
   });
-});
+}
 
 /* ---- CPF mask ---- */
 ['loginCpf','regCpf'].forEach(id => {
@@ -166,94 +176,108 @@ document.querySelectorAll('.eye-btn').forEach(btn => {
 const regPhone = $('regPhone');
 if (regPhone) regPhone.addEventListener('input', () => { regPhone.value = formatPhone(regPhone.value); });
 
-/* ---- LOGIN ---- */
-$('loginForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  clearErrors('loginCpfErr','loginPassErr','loginGlobalErr');
-
-  const cpf = $('loginCpf').value.replace(/\D/g,'');
-  const pass = $('loginPass').value;
-  const remember = $('rememberMe').checked;
-
-  let valid = true;
-  if (cpf.length !== 11) { setError('loginCpfErr','CPF inválido'); valid = false; }
-  if (!pass) { setError('loginPassErr','Informe a senha'); valid = false; }
-  if (!valid) return;
-
-  const users = getUsers();
-  const user = users.find(u => u.cpf === cpf);
-
-  if (!user || user.password !== pass) {
-    setError('loginGlobalErr','CPF ou senha incorretos. Verifique os dados.');
-    showToast('Credenciais inválidas', 'error');
-    return;
-  }
-
-  const btn = $('loginSubmit');
-  btn.disabled = true;
-  btn.classList.add('is-loading');
-
-  setSession({ id: user.id, name: user.name, cpf: user.cpf, cpfFormatted: user.cpfFormatted }, remember);
-  showToast('Bem-vindo(a), ' + user.name.split(' ')[0] + '! 👋', 'success');
-
-  setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+/* ---- Eye toggle ---- */
+document.querySelectorAll('.eye-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const inp = $(btn.dataset.target);
+    if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+  });
 });
+const loginForm = $('loginForm');
+if (loginForm) {
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearErrors('loginCpfErr','loginPassErr','loginGlobalErr');
+
+    const cpf = $('loginCpf')?.value.replace(/\D/g,'') || '';
+    const pass = $('loginPass')?.value || '';
+    const remember = $('rememberMe')?.checked || false;
+
+    let valid = true;
+    if (cpf.length !== 11) { setError('loginCpfErr','CPF inválido'); valid = false; }
+    if (!pass) { setError('loginPassErr','Informe a senha'); valid = false; }
+    if (!valid) return;
+
+    const users = getUsers();
+    const user = users.find(u => u.cpf === cpf);
+
+    if (!user || user.password !== pass) {
+      setError('loginGlobalErr','CPF ou senha incorretos. Verifique os dados.');
+      showToast('Credenciais inválidas', 'error');
+      return;
+    }
+
+    const btn = $('loginSubmit');
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('is-loading');
+    }
+
+    setSession({ id: user.id, name: user.name, cpf: user.cpf, cpfFormatted: user.cpfFormatted }, remember);
+    showToast('Bem-vindo(a), ' + user.name.split(' ')[0] + '! 👋', 'success');
+
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+  });
+}
 
 /* ---- REGISTER ---- */
-$('registerForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  clearErrors('regNameErr','regCpfErr','regPassErr','regPassConfErr','regTermsErr','regGlobalErr');
+const registerForm = $('registerForm');
+if (registerForm) {
+  registerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearErrors('regNameErr','regCpfErr','regPassErr','regPassConfErr','regTermsErr','regGlobalErr');
 
-  const name  = $('regName').value.trim();
-  const cpf   = $('regCpf').value.replace(/\D/g,'');
-  const birth = $('regBirth').value;
-  const phone = $('regPhone').value;
-  const gender = $('regGender').value;
-  const email = $('regEmail').value.trim();
-  const pass  = $('regPass').value;
-  const passC = $('regPassConf').value;
-  const terms = $('regTerms').checked;
+    const name  = $('regName')?.value.trim() || '';
+    const cpf   = $('regCpf')?.value.replace(/\D/g,'') || '';
+    const birth = $('regBirth')?.value || '';
+    const phone = $('regPhone')?.value || '';
+    const gender = $('regGender')?.value || '';
+    const email = $('regEmail')?.value.trim() || '';
+    const pass  = $('regPass')?.value || '';
+    const passC = $('regPassConf')?.value || '';
+    const terms = $('regTerms')?.checked || false;
 
-  let valid = true;
+    let valid = true;
 
-  if (name.length < 3) { setError('regNameErr','Informe o nome completo'); valid = false; }
-  if (!validateCpf(cpf)) { setError('regCpfErr','CPF inválido'); valid = false; }
-  if (pass.length < 6) { setError('regPassErr','Mínimo 6 caracteres'); valid = false; }
-  if (pass !== passC) { setError('regPassConfErr','Senhas não coincidem'); valid = false; }
-  if (!terms) { setError('regTermsErr','Aceite os termos para continuar'); valid = false; }
-  if (!valid) return;
+    if (name.length < 3) { setError('regNameErr','Informe o nome completo'); valid = false; }
+    if (!validateCpf(cpf)) { setError('regCpfErr','CPF inválido'); valid = false; }
+    if (pass.length < 6) { setError('regPassErr','Mínimo 6 caracteres'); valid = false; }
+    if (pass !== passC) { setError('regPassConfErr','Senhas não coincidem'); valid = false; }
+    if (!terms) { setError('regTermsErr','Aceite os termos para continuar'); valid = false; }
+    if (!valid) return;
 
-  const users = getUsers();
-  if (users.find(u => u.cpf === cpf)) {
-    setError('regGlobalErr','CPF já cadastrado. Faça o login.');
-    return;
-  }
-
-  const newUser = {
-    id: 'u_' + Date.now(),
-    name, cpf,
-    cpfFormatted: $('regCpf').value,
-    birth, phone, gender, email,
-    password: pass,
-    createdAt: new Date().toISOString().slice(0,10),
-    prontuario: {
-      codigoPaciente: String(Math.floor(Math.random()*9000)+1000),
-      prefLembrete: 'WhatsApp',
-      profissao: '',
-      rg: '',
-      evolucoes: [],
-      consultas: [],
-      documentos: [],
-      anamnese: { alergias:'', medicamentos:'', doencas:'', fumante:'Não', gestante:'Não', pressao:'Normal', obs:'' }
+    const users = getUsers();
+    if (users.find(u => u.cpf === cpf)) {
+      setError('regGlobalErr','CPF já cadastrado. Faça o login.');
+      return;
     }
-  };
 
-  users.push(newUser);
-  saveUsers(users);
-  setSession({ id: newUser.id, name: newUser.name, cpf: newUser.cpf, cpfFormatted: newUser.cpfFormatted }, false);
-  showToast('Conta criada! Bem-vindo(a), ' + name.split(' ')[0] + ' 🎉', 'success');
-  setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
-});
+    const newUser = {
+      id: 'u_' + Date.now(),
+      name, cpf,
+      cpfFormatted: $('regCpf')?.value || '',
+      birth, phone, gender, email,
+      password: pass,
+      createdAt: new Date().toISOString().slice(0,10),
+      prontuario: {
+        codigoPaciente: String(Math.floor(Math.random()*9000)+1000),
+        prefLembrete: 'WhatsApp',
+        profissao: '',
+        rg: '',
+        evolucoes: [],
+        consultas: [],
+        documentos: [],
+        anamnese: { alergias:'', medicamentos:'', doencas:'', fumante:'Não', gestante:'Não', pressao:'Normal', obs:'' }
+      }
+    };
+
+    users.push(newUser);
+    saveUsers(users);
+    setSession({ id: newUser.id, name: newUser.name, cpf: newUser.cpf, cpfFormatted: newUser.cpfFormatted }, false);
+    showToast('Conta criada! Bem-vindo(a), ' + name.split(' ')[0] + ' 🎉', 'success');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+  });
+}
 
 /* ---- Forgot password ---- */
 $('forgotBtn').addEventListener('click', () => {
